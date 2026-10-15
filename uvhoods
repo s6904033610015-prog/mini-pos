@@ -1,0 +1,44 @@
+-- 1. สร้างตารางสินค้าและตารางการขาย
+create table products (
+  id uuid primary key default gen_random_uuid(),
+  sku text not null unique,
+  name text not null,
+  price numeric not null,
+  stock integer not null default 0,
+  unit text not null default 'ชิ้น',
+  created_at timestamp with time zone default now()
+);
+
+create table sales (
+  id uuid primary key default gen_random_uuid(),
+  product_id uuid references products(id),
+  product_name text not null,
+  quantity integer not null,
+  total_price numeric not null,
+  sold_at timestamp with time zone default now()
+);
+
+-- 2. เปิดสิทธิ์การเข้าถึง (RLS Policies)
+alter table products enable row level security;
+alter table sales enable row level security;
+
+create policy "public read products" on products for select using (true);
+create policy "public write products" on products for insert with check (true);
+create policy "public update products" on products for update using (true);
+create policy "public delete products" on products for delete using (true);
+
+create policy "public read sales" on sales for select using (true);
+create policy "public write sales" on sales for insert with check (true);
+
+-- 3. ใส่ข้อมูลสินค้าเริ่มต้น 10 SKU
+insert into products (sku, name, price, stock, unit) values
+('RS-FRESH-S',   'Room Spray กลิ่น Fresh (สดชื่น) ไซส์เล็ก 30ml',   89,  40, 'ขวด'),
+('RS-FRESH-L',   'Room Spray กลิ่น Fresh (สดชื่น) ไซส์ใหญ่ 100ml',  199, 25, 'ขวด'),
+('RS-RELAX-S',   'Room Spray กลิ่น Relax (ผ่อนคลาย) ไซส์เล็ก 30ml', 89,  40, 'ขวด'),
+('RS-RELAX-L',   'Room Spray กลิ่น Relax (ผ่อนคลาย) ไซส์ใหญ่ 100ml',199, 25, 'ขวด'),
+('RS-FOCUS-S',   'Room Spray กลิ่น Focus (มีสมาธิ) ไซส์เล็ก 30ml',  89,  40, 'ขวด'),
+('RS-FOCUS-L',   'Room Spray กลิ่น Focus (มีสมาธิ) ไซส์ใหญ่ 100ml', 199, 25, 'ขวด'),
+('RS-ROMANCE-S', 'Room Spray กลิ่น Romance (โรแมนติก) ไซส์เล็ก 30ml',89, 40, 'ขวด'),
+('RS-ROMANCE-L', 'Room Spray กลิ่น Romance (โรแมนติก) ไซส์ใหญ่ 100ml',199,25, 'ขวด'),
+('CD-RELAX',     'เทียนหอม กลิ่น Relax (ผ่อนคลาย)',                 149, 20, 'ชิ้น'),
+('CD-ROMANCE',   'เทียนหอม กลิ่น Romance (โรแมนติก)',               149, 20, 'ชิ้น');
